@@ -1,8 +1,7 @@
 crossScalaVersions := Seq("2.10.4", "2.11.4")
 
 val autowire = crossProject.settings(
-  organization := "com.lihaoyi",
-
+  organization := "com.stabletechs",
   version := "0.2.6-SNAPSHOT",
   name := "autowire",
   scalaVersion := "2.11.7",
@@ -32,27 +31,27 @@ val autowire = crossProject.settings(
   },
   // Sonatype
   publishArtifact in Test := false,
-  publishTo := Some("releases"  at "https://oss.sonatype.org/service/local/staging/deploy/maven2"),
 
-  pomExtra :=
-    <url>https://github.com/lihaoyi/ajax</url>
-      <licenses>
-        <license>
-          <name>MIT license</name>
-          <url>http://www.opensource.org/licenses/mit-license.php</url>
-        </license>
-      </licenses>
-      <scm>
-        <url>git://github.com/lihaoyi/ajax.git</url>
-        <connection>scm:git://github.com/lihaoyi/ajax.git</connection>
-      </scm>
-      <developers>
-        <developer>
-          <id>lihaoyi</id>
-          <name>Li Haoyi</name>
-          <url>https://github.com/lihaoyi</url>
-        </developer>
-      </developers>
+  //Forking autowire until Li Haoyi gets more time to deal with our pull request. 
+  publishMavenStyle := true,
+  publishTo := {
+    val nexus = "https://oss.sonatype.org/"
+    if (isSnapshot.value)
+      Some("snapshots" at nexus + "content/repositories/snapshots")
+    else
+      Some("releases" at nexus + "service/local/staging/deploy/maven2")
+  },
+  sonatypeProfileName := "com.stabletechs",
+  pomExtra := (
+    <developers>
+      <developer>
+        <id>Voltaire</id>
+        <name>Nick Childers</name>
+        <url>https://github.com/voltir/</url>
+      </developer>
+    </developers>
+    ),
+  pomIncludeRepository := { _ => false }
 ).jsSettings(
     resolvers ++= Seq(
       "bintray-alexander_myltsev" at "http://dl.bintray.com/content/alexander-myltsev/maven"
