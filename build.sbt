@@ -1,10 +1,38 @@
 crossScalaVersions := Seq("2.10.4", "2.11.4")
 
-val autowire = crossProject.settings(
+//use resolvers += "Sonatype snapshots" at "https://oss.sonatype.org/content/repositories/snapshots/"
+lazy val sonatypeSettings = Seq(
   organization := "com.stabletechs",
   version := "0.2.6-SNAPSHOT",
   name := "autowire",
   scalaVersion := "2.11.7",
+
+  // Sonatype
+  publishArtifact in Test := false,
+
+  //Forking autowire until Li Haoyi gets more time to deal with our pull request.
+  publishMavenStyle := true,
+  publishTo := {
+    val nexus = "https://oss.sonatype.org/"
+    if (isSnapshot.value)
+      Some("snapshots" at nexus + "content/repositories/snapshots")
+    else
+      Some("releases" at nexus + "service/local/staging/deploy/maven2")
+  },
+  sonatypeProfileName := "com.stabletechs",
+  pomExtra := (
+    <developers>
+      <developer>
+        <id>Voltaire</id>
+        <name>Nick Childers</name>
+        <url>https://github.com/voltir/</url>
+      </developer>
+    </developers>
+    ),
+  pomIncludeRepository := { _ => false }
+)
+
+val autowire = crossProject.settings(sonatypeSettings:_*).settings(
   autoCompilerPlugins := true,
   addCompilerPlugin("com.lihaoyi" %% "acyclic" % "0.1.2"),
   libraryDependencies ++= Seq(
@@ -28,30 +56,7 @@ val autowire = crossProject.settings(
   unmanagedSourceDirectories in Compile ++= {
     if (scalaVersion.value startsWith "2.10.") Seq(baseDirectory.value / "shared" / "main" / "scala-2.10")
     else Seq(baseDirectory.value /".."/ "shared"/"src"/"main"/ "scala-2.11")
-  },
-  // Sonatype
-  publishArtifact in Test := false,
-
-  //Forking autowire until Li Haoyi gets more time to deal with our pull request. 
-  publishMavenStyle := true,
-  publishTo := {
-    val nexus = "https://oss.sonatype.org/"
-    if (isSnapshot.value)
-      Some("snapshots" at nexus + "content/repositories/snapshots")
-    else
-      Some("releases" at nexus + "service/local/staging/deploy/maven2")
-  },
-  sonatypeProfileName := "com.stabletechs",
-  pomExtra := (
-    <developers>
-      <developer>
-        <id>Voltaire</id>
-        <name>Nick Childers</name>
-        <url>https://github.com/voltir/</url>
-      </developer>
-    </developers>
-    ),
-  pomIncludeRepository := { _ => false }
+  }
 ).jsSettings(
     resolvers ++= Seq(
       "bintray-alexander_myltsev" at "http://dl.bintray.com/content/alexander-myltsev/maven"
@@ -66,5 +71,6 @@ val autowire = crossProject.settings(
   )
 )
 
+lazy val root = project.in(file(".")).settings(sonatypeSettings:_*).aggregate(autowireJS, autowireJVM)
 lazy val autowireJS = autowire.js
 lazy val autowireJVM = autowire.jvm
